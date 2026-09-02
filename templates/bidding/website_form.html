@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-3">{% if website %}编辑网站{% else %}添加网站{% endif %}</h4>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">网站名称 *</label>
+                <input type="text" class="form-control" name="name" value="{{ website.name|default:'' }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">唯一代码 *</label>
+                <input type="text" class="form-control" name="code" value="{{ website.code|default:'' }}" required>
+                <div class="form-text">须与爬虫注册代码一致，如 ccgp / cebpubservice / chinabidding / province</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">主页地址</label>
+                <input type="url" class="form-control" name="url" value="{{ website.url|default:'' }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">分类</label>
+                <select name="category" class="form-select">
+                    {% for value, label in categories %}
+                    <option value="{{ value }}" {% if website and website.category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">爬取间隔(分钟)</label>
+                <input type="number" class="form-control" name="crawl_interval" value="{{ website.crawl_interval|default:60 }}">
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                       {% if not website or website.is_active %}checked{% endif %}>
+                <label class="form-check-label" for="is_active">启用</label>
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="requires_login" name="requires_login"
+                       {% if website and website.requires_login %}checked{% endif %}>
+                <label class="form-check-label" for="requires_login">需登录</label>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
+    <a href="{% url 'website_list' %}" class="btn btn-outline-secondary">返回</a>
+</form>
+{% endblock %}

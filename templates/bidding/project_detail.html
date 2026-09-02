@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="{% url 'bidding_list' %}" class="text-decoration-none">&larr; 返回列表</a>
+        <h4 class="mt-2 mb-1">项目公告</h4>
+        <span class="text-muted small">项目编号：<code>{{ project_no }}</code> · 共 {{ infos|length }} 条公告</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="list-group list-group-flush">
+        {% for info in infos %}
+        <a href="{% url 'bidding_detail' info.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+            <div class="flex-grow-1 me-3">
+                <div class="fw-semibold mb-1">{{ info.title }}</div>
+                <div class="text-muted small">
+                    <span>{{ info.website.name }}</span>
+                    {% if info.region %}<span class="mx-1">·</span><span>{{ info.region }}</span>{% endif %}
+                    <span class="mx-1">·</span><span>{{ info.publish_date|date:'Y-m-d'|default:'日期未知' }}</span>
+                </div>
+            </div>
+            {% if info.status == 'open' %}<span class="badge bg-success">招标中</span>
+            {% elif info.status == 'closed' %}<span class="badge bg-secondary">已截止</span>
+            {% elif info.status == 'awarded' %}<span class="badge bg-warning">已中标</span>
+            {% else %}<span class="badge bg-light">{{ info.status }}</span>{% endif %}
+        </a>
+        {% empty %}
+        <div class="list-group-item text-center text-muted py-5">暂无公告</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

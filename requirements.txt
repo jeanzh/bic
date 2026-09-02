@@ -1,0 +1,11 @@
+# Web framework
+Django==5.2.15
+# Browser automation
+playwright==1.61.0
+# HTML parsing
+beautifulsoup4==4.15.0
+lxml==6.1.1
+# Excel / data processing
+pandas==3.0.3
+openpyxl==3.1.5
+python-calamine==0.7.0

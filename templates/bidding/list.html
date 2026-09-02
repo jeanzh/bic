@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">招标信息</h4>
+    <span class="text-muted small">共 {{ page_obj.paginator.count }} 条</span>
+</div>
+
+<form method="get" class="card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label mb-1">关键词</label>
+            <input type="text" name="q" class="form-control" placeholder="标题 / 正文 / 招标人" value="{{ filters.q }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">网站</label>
+            <select name="website" class="form-select">
+                <option value="">全部网站</option>
+                {% for w in websites %}
+                <option value="{{ w.id }}" {% if filters.website == w.id|stringformat:'s' %}selected{% endif %}>{{ w.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">地区</label>
+            <input type="text" name="region" class="form-control" placeholder="地区" value="{{ filters.region }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label mb-1">状态</label>
+            <select name="status" class="form-select">
+                <option value="">全部状态</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label mb-1">发布日期</label>
+            <div class="input-group">
+                <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+                <span class="input-group-text">至</span>
+                <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+            </div>
+        </div>
+        <div class="col-12 mt-3">
+            <button type="submit" class="btn btn-primary">筛选</button>
+            <a href="{% url 'bidding_list' %}" class="btn btn-outline-secondary">重置</a>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3">
+    {% for group in page_obj %}
+    {% with info=group.latest %}
+    <div class="col-md-6 col-xl-4">
+        <a href="{% if group.infos|length > 1 %}{% url 'bidding_project' group.project_no %}{% else %}{% url 'bidding_detail' info.pk %}{% endif %}" class="bid-card">
+            <div class="bid-card__top">
+                <span class="bid-card__site">{{ info.website.name }}</span>
+                {% if group.infos|length > 1 %}<span class="badge bg-primary">{{ group.infos|length }} 阶段</span>
+                {% elif info.status == 'open' %}<span class="badge bg-success">招标中</span>
+                {% elif info.status == 'closed' %}<span class="badge bg-secondary">已截止</span>
+                {% elif info.status == 'awarded' %}<span class="badge bg-warning">已中标</span>
+                {% else %}<span class="badge bg-light">{{ info.status }}</span>{% endif %}
+            </div>
+            <h6 class="bid-card__title">{{ info.title }}</h6>
+            {% if group.project_no %}<div class="bid-card__project">项目编号：{{ group.project_no }}</div>{% endif %}
+            <div class="bid-card__meta">
+                {% if info.region %}<span class="bid-card__tag">{{ info.region }}</span>{% endif %}
+                <span class="bid-card__tag">{{ info.publish_date|date:'Y-m-d'|default:'日期未知' }}</span>
+                {% if info.industry %}<span class="bid-card__tag">{{ info.industry }}</span>{% endif %}
+            </div>
+            <div class="bid-card__footer">
+                <span class="bid-card__purchaser">{{ info.purchaser|default:'招标人未提供' }}</span>
+                {% if info.budget_amount %}<span class="bid-card__amount">¥{{ info.budget_amount }}</span>{% endif %}
+            </div>
+        </a>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <div class="col-12">
+        <div class="card p-5 text-center text-muted">暂无招标信息</div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ filters.q }}&website={{ filters.website }}&region={{ filters.region }}&status={{ filters.status }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}">上一页</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ filters.q }}&website={{ filters.website }}&region={{ filters.region }}&status={{ filters.status }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}">下一页</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-3">系统配置</h4>
+<form method="post">
+    {% csrf_token %}
+    <div class="card mb-3" style="max-width:600px">
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">最大并发爬虫数</label>
+                <input type="number" class="form-control" name="crawl_max_concurrent"
+                       value="{% for c in configs %}{% if c.key == 'crawl_max_concurrent' %}{{ c.value }}{% endif %}{% endfor %}"
+                       placeholder="2">
+                <input type="hidden" name="crawl_max_concurrent_desc" value="最大并发爬虫数">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">招标信息保留天数</label>
+                <input type="number" class="form-control" name="bidding_retention_days"
+                       value="{% for c in configs %}{% if c.key == 'bidding_retention_days' %}{{ c.value }}{% endif %}{% endfor %}"
+                       placeholder="365">
+                <input type="hidden" name="bidding_retention_days_desc" value="招标信息保留天数">
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">保存配置</button>
+</form>
+{% endblock %}

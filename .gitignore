@@ -1,0 +1,56 @@
+# Virtual environment
+venv/
+py314env/
+myenv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Database
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.sqlite3.backup
+*.sqlite3.corrupted
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+django_server.log
+server.log
+
+# Media / Static (user uploads / downloaded files)
+media/
+
+# Claude Code
+.claude/
+
+# Temp files
+tmp/
+temp_*.txt
+ssh_runner.py
+remote_diag.py
+diag_script.py
+
+# Debug artifacts
+_debug_*
+
+# Environment
+.env
+.env.local

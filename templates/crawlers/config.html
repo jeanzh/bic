@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-3">爬虫配置</h4>
+
+<form method="post">
+    {% csrf_token %}
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>网站</th><th>爬取间隔(分钟)</th><th>启用网站</th><th>启用定时</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for site, cfg in configs %}
+            <tr>
+                <td>{{ site.name }} <code class="text-muted">{{ site.code }}</code></td>
+                <td><input type="number" class="form-control" name="interval_{{ site.code }}" value="{{ site.crawl_interval }}" style="width:120px"></td>
+                <td>
+                    <input type="checkbox" class="form-check-input" name="active_{{ site.code }}" {% if site.is_active %}checked{% endif %}>
+                </td>
+                <td>
+                    <input type="checkbox" class="form-check-input" name="enabled_{{ site.code }}" {% if cfg.is_scheduled_enabled %}checked{% endif %}>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted">暂无网站</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">保存配置</button>
+</form>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-3">{% if rule %}编辑过滤规则{% else %}添加过滤规则{% endif %}</h4>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">规则名称 *</label>
+        <input type="text" class="form-control" name="name" value="{{ rule.name|default:'' }}" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">包含关键词（逗号分隔）</label>
+        <input type="text" class="form-control" name="keywords" value="{{ rule.keywords|default:'' }}">
+        <div class="form-text">标题或正文命中任一分词即匹配</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">排除关键词（逗号分隔）</label>
+        <input type="text" class="form-control" name="exclude_keywords" value="{{ rule.exclude_keywords|default:'' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">地区（逗号分隔）</label>
+        <input type="text" class="form-control" name="regions" value="{{ rule.regions|default:'' }}">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">行业分类（逗号分隔）</label>
+        <input type="text" class="form-control" name="industries" value="{{ rule.industries|default:'' }}">
+    </div>
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+               {% if not rule or rule.is_active %}checked{% endif %}>
+        <label class="form-check-label" for="is_active">启用</label>
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
+    <a href="{% url 'filter_rule_list' %}" class="btn btn-outline-secondary">返回</a>
+</form>
+{% endblock %}

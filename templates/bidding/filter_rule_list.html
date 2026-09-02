@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">过滤规则</h4>
+    <a href="{% url 'filter_rule_create' %}" class="btn btn-primary">添加规则</a>
+</div>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>名称</th><th>包含关键词</th><th>排除关键词</th>
+            <th>地区</th><th>行业</th><th>启用</th><th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in rules %}
+        <tr>
+            <td>{{ r.name }}</td>
+            <td>{{ r.keywords }}</td>
+            <td>{{ r.exclude_keywords }}</td>
+            <td>{{ r.regions }}</td>
+            <td>{{ r.industries }}</td>
+            <td>{% if r.is_active %}<span class="badge bg-success">启用</span>{% else %}<span class="badge bg-secondary">停用</span>{% endif %}</td>
+            <td>
+                <a href="{% url 'filter_rule_edit' r.pk %}" class="btn btn-sm btn-outline-primary">编辑</a>
+                <form method="post" action="{% url 'filter_rule_delete' r.pk %}" style="display:inline" onsubmit="return confirm('确认删除该规则？')">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted">暂无规则（无规则时保留全部数据）</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

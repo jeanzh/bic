@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<h4 class="mb-3">爬虫管理</h4>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>网站</th><th>代码</th><th>状态</th><th>最近采集</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in website_statuses %}
+        <tr>
+            <td>{{ s.website.name }}</td>
+            <td><code>{{ s.website.code }}</code></td>
+            <td>
+                {% if s.running %}<span class="badge bg-primary">运行中</span>
+                {% elif s.status == '已完成' %}<span class="badge bg-success">已完成</span>
+                {% elif s.status == '失败' %}<span class="badge bg-danger">失败</span>
+                {% else %}<span class="badge bg-secondary">{{ s.status }}</span>{% endif %}
+                {% if s.error_message %}<div class="text-danger small">{{ s.error_message|truncatechars:60 }}</div>{% endif %}
+            </td>
+            <td>
+                {% if s.finished_at %}{{ s.finished_at|date:'Y-m-d H:i' }}{% else %}-{% endif %}
+                {% if s.items_found %}<span class="badge bg-info">{{ s.items_found }} 条</span>{% endif %}
+            </td>
+            <td>
+                {% if s.running %}
+                <form method="post" action="{% url 'stop_crawler' s.website.code %}" style="display:inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">停止</button>
+                </form>
+                {% elif s.website.requires_login %}
+                <span class="badge bg-warning">需登录</span>
+                {% else %}
+                <form method="post" action="{% url 'trigger_manual' s.website.code %}" style="display:inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-success">立即采集</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted">暂无网站，请先到「网站管理」添加</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h5 class="mt-4 mb-2">最近运行记录</h5>
+<table class="table table-sm table-striped">
+    <thead class="table-secondary">
+        <tr><th>网站</th><th>触发方式</th><th>状态</th><th>采集条数</th><th>开始时间</th><th>结束时间</th></tr>
+    </thead>
+    <tbody>
+        {% for run in recent_runs %}
+        <tr>
+            <td><code>{{ run.website_code }}</code></td>
+            <td>{{ run.get_trigger_type_display }}</td>
+            <td>{{ run.get_status_display }}</td>
+            <td>{{ run.items_found }}</td>
+            <td>{{ run.started_at|date:'Y-m-d H:i'|default:'-' }}</td>
+            <td>{{ run.finished_at|date:'Y-m-d H:i'|default:'-' }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted">暂无运行记录</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

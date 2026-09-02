@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招标信息采集系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/main.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">招标信息采集</a>
+            {% if user.is_authenticated %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'bidding_list' %}">招标信息</a></li>
+                    {% if user.is_admin %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'crawler_dashboard' %}">爬虫管理</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'user_list' %}">用户管理</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">配置</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'website_list' %}">网站管理</a></li>
+                            <li><a class="dropdown-item" href="{% url 'filter_rule_list' %}">过滤规则</a></li>
+                            <li><a class="dropdown-item" href="{% url 'crawler_config' %}">爬虫配置</a></li>
+                            <li><a class="dropdown-item" href="{% url 'system_config' %}">系统配置</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                <span class="navbar-text me-3">{{ user.display_name|default:user.username }}</span>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'logout' %}">退出</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
