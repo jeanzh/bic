@@ -32,8 +32,6 @@
                     </li>
                     {% endif %}
                 </ul>
-                <span class="navbar-text me-3">{{ user.display_name|default:user.username }}</span>
-                <a class="btn btn-outline-primary btn-sm" href="{% url 'logout' %}">退出</a>
             </div>
             {% endif %}
         </div>

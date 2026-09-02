@@ -6,6 +6,9 @@ from .models import User
 
 
 def login_view(request):
+    # 临时：已由 AutoLoginAdminMiddleware 自动以管理员身份登录，无需登录框
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         if username:
