@@ -58,9 +58,10 @@ class Command(BaseCommand):
 
             interval_minutes = website.crawl_interval or 60
             # Use the per-site last run time from its CrawlerRun history.
+            # 只看最近一次（含失败）的结束时间：若上次失败，也按间隔退避，
+            # 避免从未成功过的站点每 30 秒被重试一次形成失败循环。
             last_run = CrawlerRun.objects.filter(
                 website_code=website.code,
-                status='completed',
                 finished_at__isnull=False,
             ).order_by('-finished_at').first()
             if last_run and last_run.finished_at:
