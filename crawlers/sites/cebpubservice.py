@@ -4,9 +4,13 @@
 /xxfbcmses/search/bulletin.html 即可。列表按发布时间倒序，每页 20 条，
 共约 500 页；每条已含标题/行业/地区/来源渠道/发布时间/开标时间。
 
-支持关键字检索：`word` 参数（取自启用 FilterRule 的「包含关键词」并集，URL
-单次编码即可），无关键字时爬全栏目。行业/地区筛选（industryName/area）保留给
-保存阶段的 apply_filters 处理——列表页已带行业与地区，故无需进详情页即可过滤。
+只做全栏目顺序爬取（按发布时间倒序），遇 cutoff（已入库最新发布日期）提前停页，
+翻页上限 max_pages。关键字/行业/地区筛选全部交给保存阶段的 apply_filters 处理
+——列表页已带标题/行业/地区，无需进详情页即可过滤。
+
+注意：站内 `word` 搜索是模糊匹配（搜「代扣服务」会返回大量不含该词的无关项），
+用它做预筛没有任何收益，反而会因 11 个关键词各自返回几百页而放大请求量、触发
+限流，故这里刻意不用关键字检索。
 
 详情页位于 ctbpsp.com 的 Vue SPA（#/bulletinDetail），其数据接口
 /cutominfoapi/bulletinuuid/{uuid} 受阿里云 WAF 拦截，详情页面还叠加 VAPTCHA
@@ -16,12 +20,11 @@ import asyncio
 import re
 import sys
 from datetime import datetime, date
-from urllib.parse import quote
 
 from bs4 import BeautifulSoup
 from django.utils import timezone as tz
 
-from bidding.models import BiddingInfo, FilterRule
+from bidding.models import BiddingInfo
 from crawlers.base import BaseSiteCrawler, parse_date
 
 
@@ -53,24 +56,9 @@ class CebpCrawler(BaseSiteCrawler):
         items = []
         seen = {}
         cutoff = self._site_cutoff()
-        keywords = self._collect_keywords()
-        if keywords:
-            # 关键字检索结果为相关度排序（非按时间倒序），无法用 cutoff 提前停页，
-            # 只做按条跳过，翻页至 max_pages。
-            for kw in keywords:
-                await self._crawl_list(context, items, seen, word=kw)
-        else:
-            # 全栏目列表按发布时间倒序，可遇 cutoff 提前停页。
-            await self._crawl_list(context, items, seen, cutoff=cutoff)
+        # 全栏目按发布时间倒序，遇 cutoff 提前停页；关键字筛选交给保存阶段。
+        await self._crawl_list(context, items, seen, cutoff=cutoff)
         return items
-
-    def _collect_keywords(self):
-        """启用规则「包含关键词」的并集（去重、排序）。"""
-        kws = set()
-        for rule in FilterRule.objects.filter(is_active=True):
-            for kw in rule.keyword_list():
-                kws.add(kw)
-        return sorted(kws)
 
     def _site_cutoff(self):
         """本站已入库数据的最新发布日期。"""
@@ -81,7 +69,7 @@ class CebpCrawler(BaseSiteCrawler):
                   .first())
         return latest.isoformat() if latest else None
 
-    def _list_url(self, page_no, word=''):
+    def _list_url(self, page_no):
         params = [
             f'searchDate={date.today().isoformat()}',
             f'dates={self.DATES}',
@@ -92,15 +80,15 @@ class CebpCrawler(BaseSiteCrawler):
             'publishMedia=',
             'sourceInfo=',
             'showStatus=1',
-            f'word={quote(word)}',
+            'word=',
             f'page={page_no}',
         ]
         return self.LIST_URL + '?' + '&'.join(params)
 
-    async def _crawl_list(self, context, items, seen, word='', cutoff=None):
+    async def _crawl_list(self, context, items, seen, cutoff=None):
         page_no = 1
         while page_no <= self.max_pages:
-            url = self._list_url(page_no, word)
+            url = self._list_url(page_no)
             html = await self._fetch(context, url)
             if not html:
                 break
@@ -116,10 +104,7 @@ class CebpCrawler(BaseSiteCrawler):
                 seen[uid] = True
                 if (cutoff and item.get('publish_date')
                         and item['publish_date'] < cutoff):
-                    # 仅全栏目（按时间倒序）允许遇 cutoff 提前停页；
-                    # 关键字检索（相关度排序）只跳过旧条目、继续翻页。
-                    if word:
-                        continue
+                    # 列表按发布时间倒序：遇 cutoff 即停页。
                     reached_cutoff = True
                     break
                 items.append(item)
