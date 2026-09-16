@@ -80,3 +80,7 @@ USE_TZ = True
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 SESSION_COOKIE_HTTPONLY = True
+
+# 部署在反向代理子路径（如 nginx 的 /bic）时，通过环境变量注入前缀。
+# 例如 FORCE_SCRIPT_NAME=/bic 会使 {% url %} 生成的链接带上 /bic 前缀。
+FORCE_SCRIPT_NAME = os.environ.get('FORCE_SCRIPT_NAME', '')
