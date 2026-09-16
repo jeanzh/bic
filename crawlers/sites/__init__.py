@@ -9,6 +9,7 @@ from .ggzy import GgzyCrawler
 from .longjicai import LongjicaiCrawler
 from .nongyinecai import NongyinecaiCrawler
 from .province import ProvinceCrawler
+from .thtc import ThtcCrawler
 from .youyin import YouyinCrawler
 from .zgjr import ZgjrCrawler
 from .zhongxinjinkong import ZhongxinjinkongCrawler
@@ -25,6 +26,7 @@ CRAWLERS = {
     LongjicaiCrawler.code: LongjicaiCrawler,
     NongyinecaiCrawler.code: NongyinecaiCrawler,
     ProvinceCrawler.code: ProvinceCrawler,
+    ThtcCrawler.code: ThtcCrawler,
     YouyinCrawler.code: YouyinCrawler,
     ZgjrCrawler.code: ZgjrCrawler,
     ZhongyinCrawler.code: ZhongyinCrawler,
